@@ -1,20 +1,6 @@
-````markdown
 # The Data Hub
 
-A simple REST API server built using Node.js and Express.  
-This project was created to understand REST architecture, CRUD operations, middleware, and API testing using ThunderClient/Postman.
-
----
-
-## Features
-
-- Express server setup
-- REST API endpoints
-- In-memory database using array
-- CRUD operations
-- Custom middleware logging
-- Mock login API with JWT response
-- Tested using Thunder Client
+A REST API built with Node.js, Express, and MongoDB. Supports blog post management and user authentication with full CRUD operations, Mongoose models, and custom middleware logging.
 
 ---
 
@@ -22,75 +8,93 @@ This project was created to understand REST architecture, CRUD operations, middl
 
 - Node.js
 - Express.js
+- MongoDB + Mongoose
+- dotenv
 
 ---
 
-## API Endpoints
+## Project Structure
 
-| Method | Route | Description |
-|---|---|---|
-| GET | /health | Checks server status |
-| GET | api/posts | Get all blog posts |
-| GET | api/posts/:id | Get single blog post |
-| POST | api/posts | Create new post |
-| PUT | api/posts/:id | Update a post |
-| DELETE | api/posts/:id | Delete a post |
-| POST | auth/login | Mock login route |
+```
+week10/
+├── server.js
+├── config/
+│   └── db.js
+├── controllers/
+│   ├── authController.js
+│   └── postController.js
+├── middleware/
+│   └── urlLogger.js
+├── models/
+│   ├── Post.js
+│   └── User.js
+└── routes/
+    ├── authRoutes.js
+    └── postRoutes.js
+```
 
 ---
 
 ## Installation
 
-Clone the repository:
-
 ```bash
-git clone https://github.com/Spoorthy0/Prodesk-week9.git
-```
-
-Move into project folder:
-
-```bash
-cd data-hub
-```
-
-Install dependencies:
-
-```bash
+git clone https://github.com/Spoorthy0/Prodesk-week10.git
+cd week10
 npm install
+```
+
+Create a `.env` file:
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
 ```
 
 Run the server:
 
 ```bash
-node server.js
+npm run dev
 ```
+
+Server runs on `http://localhost:5000`
 
 ---
 
-## Server
+## API Endpoints
 
-Server runs on:
+### Health
 
-```bash
-http://localhost:5000
-```
+| Method | Route     | Description         |
+|--------|-----------|---------------------|
+| GET    | /health   | Check server status |
 
 ---
 
-## Sample Blog Data
+### Auth — `/auth`
 
+| Method | Route          | Description              |
+|--------|----------------|--------------------------|
+| POST   | /auth/register | Register a new user      |
+| POST   | /auth/login    | Login and get mock token |
+
+**POST /auth/register** — Request body:
 ```json
 {
-  "id": 1,
-  "title": "Morning Walk",
-  "content": "Went for a walk today."
+  "name": "Jane Doe",
+  "email": "jane@example.com"
 }
 ```
 
----
+Response `201`:
+```json
+{
+  "_id": "664abc...",
+  "name": "Jane Doe",
+  "email": "jane@example.com"
+}
+```
 
-## Sample Login Request
-
+**POST /auth/login** — Request body:
 ```json
 {
   "username": "admin",
@@ -98,14 +102,90 @@ http://localhost:5000
 }
 ```
 
+Response `200`:
+```json
+{
+  "token": "prodesk-mock-demo-jwt-token-12345"
+}
+```
+
 ---
 
-## Middleware Logging
+### Posts — `/api`
 
-Every request logs:
+| Method | Route                  | Description                   |
+|--------|------------------------|-------------------------------|
+| GET    | /api/posts/top-recent  | Get 3 most recent posts       |
+| GET    | /api/posts             | Get all posts                 |
+| GET    | /api/posts/:id         | Get a single post by ID       |
+| POST   | /api/posts             | Create a new post             |
+| PUT    | /api/posts/:id         | Update a post by ID           |
+| DELETE | /api/posts/:id         | Delete a post by ID           |
 
-```bash
-[GET] /posts - 10:05 AM
+**POST /api/posts** — Request body:
+```json
+{
+  "title": "Morning Walk",
+  "content": "Went for a walk today.",
+  "authorId": "664abc..."
+}
+```
+
+Response `201`:
+```json
+{
+  "message": "Post created",
+  "data": {
+    "_id": "664xyz...",
+    "title": "Morning Walk",
+    "content": "Went for a walk today.",
+    "authorId": "664abc...",
+    "createdAt": "2026-06-05T10:00:00.000Z"
+  }
+}
+```
+
+**PUT /api/posts/:id** — Request body (any fields to update):
+```json
+{
+  "title": "Updated Title"
+}
+```
+
+**DELETE /api/posts/:id** — Response `200`:
+```json
+{
+  "message": "Post deleted"
+}
+```
+
+---
+
+## Data Models
+
+**User**
+
+| Field | Type   | Required | Unique |
+|-------|--------|----------|--------|
+| name  | String | Yes      | No     |
+| email | String | Yes      | Yes    |
+
+**Post**
+
+| Field    | Type     | Required | Notes                   |
+|----------|----------|----------|-------------------------|
+| title    | String   | Yes      |                         |
+| content  | String   | Yes      |                         |
+| authorId | ObjectId | No       | Ref to User, nullable   |
+
+---
+
+## Middleware
+
+Every incoming request is logged to the console:
+
+```
+[GET] /api/posts - 10:05:32 AM
 ```
 
 ---
@@ -113,6 +193,3 @@ Every request logs:
 ## Deployment
 
 This project is deployed on Render.
-
----
-````
