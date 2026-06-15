@@ -12,7 +12,14 @@ dotenv.config();
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://prodesk-week11-five.vercel.app',
+];
+app.use(cors({
+    origin: (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin)),
+    credentials: true,
+}));
 app.use(express.json());
 app.use(urlLogger);
 
